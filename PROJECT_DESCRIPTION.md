@@ -60,25 +60,225 @@ Since you are using `json-graphql-server`, your data structure in `db.js` define
 
 # Technical Implementation Steps
 
-## Phase 1: The Backend
+## Phase 1: Create the Mock GraphQL Backend
 
-Create `db.js` with the entities above. Start the server:
+1. Create `db.js` in the project root.
+2. Export an object with three arrays: `orders`, `shoppers`, and `admins`.
+3. Add sample records that match the entity table above.
+4. Make sure every order has a `shopper_id` that matches an existing shopper `id`.
+5. Use only valid order statuses: `PENDING`, `PICKING`, or `SHIPPED`.
+6. Start the GraphQL server:
 
 ```sh
-npx json-graphql-server db.js --p 4000
+npx json-graphql-server db.js
 ```
 
-## Phase 2: The Frontend Setup
+7. Open the URL printed in the terminal. By default, `json-graphql-server` usually runs at:
 
-Install necessary dependencies:
+```text
+http://localhost:3000/
+```
+
+8. If you need a different port, start the server with:
+
+```sh
+npx json-graphql-server db.js --port 4000
+```
+
+## Phase 2: Create the React Frontend
+
+1. Create a React app in this repo if one does not already exist.
+2. Install the GraphQL client dependencies:
 
 ```sh
 npm install @apollo/client graphql
 ```
 
-## Phase 3: The "Bread and Butter" Queries
+3. Create a source folder structure similar to this:
 
-Write your GraphQL queries in a `queries.js` file:
+```text
+src/
+  components/
+    Navbar.js
+    OrderTable.js
+    OrderRow.js
+    StatusBadge.js
+  containers/
+    Dashboard.js
+  context/
+    UserContext.js
+  graphql/
+    queries.js
+  App.js
+  index.js
+```
 
-- Query: `allOrders` to populate the table.
-- Mutation: `updateOrder(id: $id, status: $status)` for the toggle button.
+## Phase 3: Configure Apollo Client
+
+1. In `src/index.js`, import `ApolloClient`, `InMemoryCache`, and `ApolloProvider` from `@apollo/client`.
+2. Create an Apollo client that points to the GraphQL server URL.
+
+Example:
+
+```js
+const client = new ApolloClient({
+  uri: "http://localhost:3000/",
+  cache: new InMemoryCache(),
+});
+```
+
+3. Wrap the app with `ApolloProvider` so every component can run GraphQL queries.
+4. If the backend is running on a different port, update the `uri` to match that port.
+
+## Phase 4: Add User Context
+
+1. Create `src/context/UserContext.js`.
+2. Export a React context with the current logged-in admin.
+3. Use an `ADMIN` user first so the delete button behavior can be tested.
+
+Example user:
+
+```js
+{
+  id: 1,
+  name: "Sam Wilson",
+  role: "ADMIN"
+}
+```
+
+4. Wrap the app with `UserContext.Provider`.
+5. Read this context inside `Navbar` to display the admin's name and role.
+
+## Phase 5: Write GraphQL Operations
+
+Create `src/graphql/queries.js` and define the main query and mutation.
+
+1. Add an `ALL_ORDERS` query to populate the table.
+2. Include each order's `id`, `customerName`, `total`, `status`, and shopper information.
+3. Add an `UPDATE_ORDER_STATUS` mutation for changing the order status.
+
+Example query:
+
+```js
+import { gql } from "@apollo/client";
+
+export const ALL_ORDERS = gql`
+  query AllOrders {
+    allOrders {
+      id
+      customerName
+      total
+      status
+      Shopper {
+        id
+        name
+        rating
+      }
+    }
+  }
+`;
+```
+
+Example mutation:
+
+```js
+export const UPDATE_ORDER_STATUS = gql`
+  mutation UpdateOrderStatus($id: ID!, $status: String!) {
+    updateOrder(id: $id, status: $status) {
+      id
+      status
+    }
+  }
+`;
+```
+
+## Phase 6: Build the Dashboard Container
+
+1. Create `src/containers/Dashboard.js`.
+2. Use Apollo's `useQuery(ALL_ORDERS)` hook to fetch orders.
+3. Store the search text in React state.
+4. Store the selected status filter in React state.
+5. Filter the orders by customer name and status before passing them to the table.
+6. Show a loading spinner or loading message while the query is loading.
+7. Show an error message if the query fails.
+8. Pass the filtered orders to `OrderTable`.
+
+## Phase 7: Build Presentation Components
+
+1. Create `Navbar`.
+   - Read the current admin from `UserContext`.
+   - Display the admin's name and role.
+
+2. Create `OrderTable`.
+   - Render a table with columns for customer name, shopper, total, status, and actions.
+   - Map each order to an `OrderRow`.
+
+3. Create `OrderRow`.
+   - Display the order data.
+   - Use `StatusBadge` for the status.
+   - Add a button to update the order status.
+   - Show the `Delete` button only when the current user's role is `ADMIN`.
+
+4. Create `StatusBadge`.
+   - Accept a `status` prop.
+   - Render a different visual style for `PENDING`, `PICKING`, and `SHIPPED`.
+
+## Phase 8: Implement Status Updates
+
+1. In `OrderRow`, use Apollo's `useMutation(UPDATE_ORDER_STATUS)` hook.
+2. When the update button is clicked, choose the next status.
+3. Suggested status flow:
+
+```text
+PENDING -> PICKING -> SHIPPED
+```
+
+4. Call the mutation with the order `id` and the next `status`.
+5. Update the UI immediately after the mutation succeeds.
+6. Refetch `ALL_ORDERS` or update Apollo's cache so the table stays in sync.
+
+## Phase 9: Add Search and Filter Controls
+
+1. Add a search input above the order table.
+2. Search against `customerName`.
+3. Add a status filter dropdown with these options:
+
+```text
+All
+PENDING
+PICKING
+SHIPPED
+```
+
+4. Apply both filters together.
+5. If no orders match the filters, show an empty state message.
+
+## Phase 10: Verify the App
+
+1. Start the GraphQL server:
+
+```sh
+npx json-graphql-server db.js
+```
+
+2. Start the React development server:
+
+```sh
+npm start
+```
+
+3. Confirm the dashboard loads orders from GraphQL.
+4. Confirm the loading state appears while data is being fetched.
+5. Confirm search works by customer name.
+6. Confirm filtering works by status.
+7. Confirm status updates change the UI and persist through the GraphQL server.
+8. Confirm the admin name and role appear in the header.
+9. Confirm the `Delete` button only appears for users with the `ADMIN` role.
+
+## Phase 11: Optional Cleanup
+
+1. Move repeated status values into a shared constant.
+2. Format currency values consistently.
+3. Add basic component styling.
+4. Add a simple empty state for no results.
+5. Add tests for filtering logic if the project includes a test setup.
