@@ -44,7 +44,7 @@ Your app should follow a modular structure to demonstrate separation of concerns
 
 # Entity Relationship Diagram
 
-Since you are using `json-graphql-server`, your data structure in `db.js` defines your schema.
+Since you are using `json-graphql-server`, your data structure in `db.cjs` defines your schema.
 
 | Entity | Field | Type | Description |
 | --- | --- | --- | --- |
@@ -64,7 +64,7 @@ Since you are using `json-graphql-server`, your data structure in `db.js` define
 
 ## Phase 1: Create the Mock GraphQL Backend
 
-1. Create `db.js` in the project root.
+1. Create `db.cjs` in the project root.
 2. Export an object with three arrays: `orders`, `shoppers`, and `admins`.
 3. Add sample records that match the entity table above.
 4. Make sure every order has a `shopper_id` that matches an existing shopper `id`.
@@ -72,7 +72,7 @@ Since you are using `json-graphql-server`, your data structure in `db.js` define
 6. Start the GraphQL server:
 
 ```sh
-npx json-graphql-server db.js
+npx json-graphql-server db.cjs
 ```
 
 7. Open the URL printed in the terminal. By default, `json-graphql-server` usually runs at:
@@ -84,7 +84,7 @@ http://localhost:3000/
 8. If you need a different port, start the server with:
 
 ```sh
-npx json-graphql-server db.js -p 4000
+npx json-graphql-server db.cjs -p 4000
 ```
 
 ## Phase 2: Create the React Frontend
@@ -151,7 +151,7 @@ Example:
 
 ```js
 const client = new ApolloClient({
-  uri: "http://localhost:3000/",
+  link: new HttpLink({ uri: "http://localhost:4000/" }),
   cache: new InMemoryCache(),
 });
 ```
@@ -300,7 +300,7 @@ SHIPPED
 1. Start the GraphQL server:
 
 ```sh
-npx json-graphql-server db.js
+npx json-graphql-server db.cjs
 ```
 
 2. Start the React development server:
