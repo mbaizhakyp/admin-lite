@@ -37,6 +37,8 @@ Your app should follow a modular structure to demonstrate separation of concerns
 ## Presentation Layer
 
 - `Navbar`: consumes `UserContext` to show profile info.
+- `SearchBar`: renders the customer-name search input.
+- `StatusFilter`: renders the order-status dropdown.
 - `OrderTable`: maps through data to render `OrderRow`.
 - `StatusBadge`: a pure component that styles itself based on the status string.
 
@@ -125,6 +127,8 @@ npm install @apollo/client graphql
 src/
   components/
     Navbar.js
+    SearchBar.js
+    StatusFilter.js
     OrderTable.js
     OrderRow.js
     StatusBadge.js
@@ -223,10 +227,12 @@ export const UPDATE_ORDER_STATUS = gql`
 2. Use Apollo's `useQuery(ALL_ORDERS)` hook to fetch orders.
 3. Store the search text in React state.
 4. Store the selected status filter in React state.
-5. Filter the orders by customer name and status before passing them to the table.
-6. Show a loading spinner or loading message while the query is loading.
-7. Show an error message if the query fails.
-8. Pass the filtered orders to `OrderTable`.
+5. Pass the search text and setter function to `SearchBar`.
+6. Pass the selected status and setter function to `StatusFilter`.
+7. Filter the orders by customer name and status before passing them to the table.
+8. Show a loading spinner or loading message while the query is loading.
+9. Show an error message if the query fails.
+10. Pass the filtered orders to `OrderTable`.
 
 ## Phase 7: Build Presentation Components
 
@@ -234,17 +240,27 @@ export const UPDATE_ORDER_STATUS = gql`
    - Read the current admin from `UserContext`.
    - Display the admin's name and role.
 
-2. Create `OrderTable`.
+2. Create `SearchBar`.
+   - Accept `searchText` and `onSearchChange` props.
+   - Render a text input with a placeholder such as `Search by customer name`.
+   - Call `onSearchChange` whenever the input value changes.
+
+3. Create `StatusFilter`.
+   - Accept `selectedStatus` and `onStatusChange` props.
+   - Render a dropdown for `All`, `PENDING`, `PICKING`, and `SHIPPED`.
+   - Call `onStatusChange` whenever the selected option changes.
+
+4. Create `OrderTable`.
    - Render a table with columns for customer name, shopper, total, status, and actions.
    - Map each order to an `OrderRow`.
 
-3. Create `OrderRow`.
+5. Create `OrderRow`.
    - Display the order data.
    - Use `StatusBadge` for the status.
    - Add a button to update the order status.
    - Show the `Delete` button only when the current user's role is `ADMIN`.
 
-4. Create `StatusBadge`.
+6. Create `StatusBadge`.
    - Accept a `status` prop.
    - Render a different visual style for `PENDING`, `PICKING`, and `SHIPPED`.
 
@@ -264,9 +280,10 @@ PENDING -> PICKING -> SHIPPED
 
 ## Phase 9: Add Search and Filter Controls
 
-1. Add a search input above the order table.
+1. Render `SearchBar` above the order table.
 2. Search against `customerName`.
-3. Add a status filter dropdown with these options:
+3. Render `StatusFilter` next to `SearchBar`.
+4. Include these status filter options:
 
 ```text
 All
@@ -275,8 +292,8 @@ PICKING
 SHIPPED
 ```
 
-4. Apply both filters together.
-5. If no orders match the filters, show an empty state message.
+5. Apply both filters together in `Dashboard`.
+6. If no orders match the filters, show an empty state message.
 
 ## Phase 10: Verify the App
 
