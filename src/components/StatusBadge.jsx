@@ -1,4 +1,5 @@
-function StatusBadge() {
-    <p>Status Badge</p>
+function StatusBadge({ status }) {
+  return <span className={`status-badge status-${status.toLowerCase()}`}>{status}</span>;
 }
-export default StatusBadge
+
+export default StatusBadge;

@@ -1,23 +1,24 @@
 import OrderRow from "./OrderRow";
 
-function orderTable() {
+function OrderTable({ orders }) {
   return (
     <table className="order-table">
       <thead>
         <tr>
           <th>Order ID</th>
           <th>Customer Name</th>
-          <th>Status</th>
           <th>Total</th>
+          <th>Status</th>
+          <th>Shopper</th>
         </tr>
       </thead>
       <tbody>
-        <OrderRow />
-        <OrderRow />
-        <OrderRow />
+        {orders.map((order) => (
+          <OrderRow key={order.id} order={order} />
+        ))}
       </tbody>
     </table>
   );
 }
 
-export default orderTable;
+export default OrderTable;

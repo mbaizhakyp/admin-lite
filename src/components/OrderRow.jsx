@@ -1,14 +1,15 @@
 import StatusBadge from "./StatusBadge";
 
-function OrderRow() {
+function OrderRow({ order }) {
   return (
     <tr>
-      <td>id</td>
-      <td>customer</td>
-      <td>date</td>
+      <td>{order.id}</td>
+      <td>{order.customerName}</td>
+      <td>${order.total.toFixed(2)}</td>
       <td>
-        <StatusBadge status />
+        <StatusBadge status={order.status} />
       </td>
+      <td>{order.Shopper?.name ?? "Unassigned"}</td>
     </tr>
   );
 }
